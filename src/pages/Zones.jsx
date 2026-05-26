@@ -12,11 +12,14 @@ function getCenter(points) {
   return [lats.reduce((a, b) => a + b, 0) / lats.length, lngs.reduce((a, b) => a + b, 0) / lngs.length]
 }
 
-function ClickHandler({ drawing, onAddPoint }) {
+function ClickHandler({ drawing, placingCenter, onAddPoint, onPlaceCenter }) {
   useMapEvents({
     click: (e) => {
       if (drawing) {
         onAddPoint([e.latlng.lat, e.latlng.lng])
+      }
+      if (placingCenter) {
+        onPlaceCenter(e.latlng.lat, e.latlng.lng)
       }
     }
   })
@@ -29,7 +32,9 @@ export default function Zones() {
   const [zones, setZones] = useState([])
   const [showModal, setShowModal] = useState(false)
   const [drawing, setDrawing] = useState(false)
+  const [placingCenter, setPlacingCenter] = useState(false)
   const [drawPoints, setDrawPoints] = useState([])
+  const [tempCenter, setTempCenter] = useState(null)
   const [newZone, setNewZone] = useState({ name: '', type: 'circle', lat: -24.84, lng: -65.41, radius: 500, color: '#2563eb', points: [] })
 
   useEffect(() => {
@@ -65,7 +70,21 @@ export default function Zones() {
 
   function cancelDrawing() {
     setDrawing(false)
+    setPlacingCenter(false)
     setDrawPoints([])
+    setTempCenter(null)
+  }
+
+  function startCirclePlacement() {
+    setPlacingCenter(true)
+    setTempCenter(null)
+  }
+
+  function handlePlaceCenter(lat, lng) {
+    setTempCenter({ lat, lng })
+    setPlacingCenter(false)
+    setNewZone({ name: '', type: 'circle', lat, lng, radius: 500, color: '#2563eb', points: [] })
+    setShowModal(true)
   }
 
   function handleSave() {
@@ -93,24 +112,25 @@ export default function Zones() {
           <p>Geocercas circulares y polígonos dibujables en el mapa</p>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          {drawing ? (
+          {drawing || placingCenter ? (
             <>
-              <button className="btn-outline" onClick={handleUndoPoint} disabled={drawPoints.length === 0}>
-                Deshacer punto ({drawPoints.length})
-              </button>
-              <button className="btn-primary" onClick={finishDrawing} disabled={drawPoints.length < 3}>
-                <Hexagon size={16} /> Finalizar polígono
-              </button>
+              {drawing && (
+                <button className="btn-outline" onClick={handleUndoPoint} disabled={drawPoints.length === 0}>
+                  Deshacer punto ({drawPoints.length})
+                </button>
+              )}
+              {drawing && (
+                <button className="btn-primary" onClick={finishDrawing} disabled={drawPoints.length < 3}>
+                  <Hexagon size={16} /> Finalizar polígono
+                </button>
+              )}
               <button className="btn-danger" onClick={cancelDrawing}>
-                Cancelar dibujo
+                Cancelar
               </button>
             </>
           ) : (
             <>
-              <button className="btn-primary" onClick={() => {
-                setNewZone({ name: '', type: 'circle', lat: -24.84, lng: -65.41, radius: 500, color: '#2563eb', points: [] })
-                setShowModal(true)
-              }}>
+              <button className="btn-primary" onClick={startCirclePlacement}>
                 <Plus size={16} /> Zona Circular
               </button>
               <button className="btn-outline" onClick={() => {
@@ -132,6 +152,15 @@ export default function Zones() {
         </div>
       )}
 
+      {placingCenter && (
+        <div className="stat-card" style={{ marginBottom: 16, padding: '10px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
+          <Crosshair size={18} color="hsl(var(--primary))" />
+          <span style={{ fontSize: '0.88rem' }}>
+            <strong>Colocando zona circular:</strong> hacé clic en el mapa para definir el centro
+          </span>
+        </div>
+      )}
+
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 20, marginBottom: 20 }}>
         <div className="map-container" style={{ height: '450px' }}>
           <MapContainer
@@ -143,7 +172,7 @@ export default function Zones() {
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
-            <ClickHandler drawing={drawing} onAddPoint={handleAddPoint} />
+            <ClickHandler drawing={drawing} placingCenter={placingCenter} onAddPoint={handleAddPoint} onPlaceCenter={handlePlaceCenter} />
 
             {zones.filter(z => z.type === 'circle').map(z => (
               <CircleLeaflet
@@ -189,6 +218,21 @@ export default function Zones() {
                     iconSize: [14, 14], iconAnchor: [7, 7],
                   })} />
                 ))}
+              </>
+            )}
+
+            {tempCenter && (
+              <>
+                <CircleLeaflet
+                  center={[tempCenter.lat, tempCenter.lng]}
+                  radius={500}
+                  pathOptions={{ color: '#2563eb', fillColor: '#2563eb', fillOpacity: 0.1, weight: 2, dashArray: '5,5' }}
+                />
+                <Marker position={[tempCenter.lat, tempCenter.lng]} icon={L.divIcon({
+                  className: 'vehicle-marker-icon',
+                  html: `<div style="width:14px;height:14px;background:#2563eb;border-radius:50%;border:3px solid white;box-shadow:0 0 0 2px #2563eb"></div>`,
+                  iconSize: [20, 20], iconAnchor: [10, 10],
+                })} />
               </>
             )}
           </MapContainer>
