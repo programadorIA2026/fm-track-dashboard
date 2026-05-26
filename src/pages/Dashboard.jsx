@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import {
-  Truck, Gauge, MapPin, Clock, TrendingUp, AlertTriangle,
+  Truck, MapPin, Clock, TrendingUp, AlertTriangle,
   Printer, Navigation
 } from 'lucide-react'
 import { getAllData } from '../api/fmTrackApi'
@@ -8,7 +8,7 @@ import { POLL_INTERVAL, DEFAULT_FROM, DEFAULT_TO } from '../config'
 import {
   formatMeters, formatDuration, formatSpeed, formatTimeAgo, vehicleStatus
 } from '../utils/helpers'
-import MapView from '../components/MapView.jsx'
+import GoogleMapView from '../components/GoogleMapView.jsx'
 
 function StatCard({ icon: Icon, label, value, sub, color }) {
   return (
@@ -35,7 +35,6 @@ function VehicleCard({ vehicle }) {
   const v = vehicle
   const status = v.last_coordinate ? vehicleStatus(v.last_coordinate) : { label: 'Sin datos', className: 'badge-red' }
   const totalKm = v.trips?.reduce((s, t) => s + (t.mileage || 0), 0) || 0
-  const totalTime = v.trips?.reduce((s, t) => s + (t.trip_duration || 0), 0) || 0
   const violationCount = v.violations?.length || 0
 
   return (
@@ -157,7 +156,7 @@ export default function Dashboard() {
       </div>
 
       <div style={{ marginBottom: 20 }}>
-        <MapView vehicles={data.vehicles} height="360px" />
+        <GoogleMapView vehicles={data.vehicles} height="360px" />
       </div>
 
       <div>

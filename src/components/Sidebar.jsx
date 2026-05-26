@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom'
 import {
   LayoutDashboard, Truck, Gauge, BarChart3,
-  ChevronRight, Wrench, Map, Bell, Fuel
+  ChevronRight, Wrench, Map, Bell
 } from 'lucide-react'
 
 const navItems = [
@@ -17,19 +17,20 @@ export default function Sidebar() {
   return (
     <div className="sidebar">
       <div style={{ padding: '20px 16px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{
-            width: 36, height: 36, borderRadius: 10,
-            background: 'hsl(var(--primary))',
-            display: 'flex', alignItems: 'center', justifyContent: 'center'
-          }}>
-            <Fuel size={20} color="white" />
-          </div>
+        <a href="https://monitoreodeflotas.com" target="_blank" rel="noopener noreferrer"
+          style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
+          <img
+            src="/logo.png"
+            alt="Monitoreo de Flotas"
+            style={{ height: 36, width: 'auto' }}
+          />
           <div>
-            <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'white' }}>FM-Track</div>
-            <div style={{ fontSize: '0.7rem', color: 'hsl(var(--sidebar-foreground) / 0.6)' }}>Dashboard</div>
+            <div style={{ fontWeight: 700, fontSize: '0.88rem', color: 'white', lineHeight: 1.2 }}>
+              Monitoreo de<br />Flotas
+            </div>
+            <div style={{ fontSize: '0.65rem', color: 'hsl(var(--sidebar-foreground) / 0.6)' }}>Dashboard</div>
           </div>
-        </div>
+        </a>
       </div>
 
       <nav style={{ padding: '12px 0', flex: 1 }}>
@@ -49,9 +50,13 @@ export default function Sidebar() {
 
       <div style={{
         padding: '16px', borderTop: '1px solid rgba(255,255,255,0.08)',
-        fontSize: '0.75rem', color: 'hsl(var(--sidebar-foreground) / 0.5)'
+        fontSize: '0.7rem', color: 'hsl(var(--sidebar-foreground) / 0.4)',
+        textAlign: 'center'
       }}>
-        DON DANTE SRL
+        <a href="https://monitoreodeflotas.com" target="_blank" rel="noopener noreferrer"
+          style={{ color: 'inherit', textDecoration: 'none' }}>
+          monitoreodeflotas.com
+        </a>
       </div>
     </div>
   )

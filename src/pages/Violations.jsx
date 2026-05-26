@@ -2,14 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { Search, AlertTriangle, Printer, Download } from 'lucide-react'
 import { getVehicles, getDetectedEvents } from '../api/fmTrackApi'
 import { formatSpeed, formatDateTime } from '../utils/helpers'
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
-import L from 'leaflet'
-
-const violationIcon = L.divIcon({
-  className: 'vehicle-marker-icon',
-  html: `<div style="width:14px;height:14px;background:#ef4444;border-radius:50%;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3)"></div>`,
-  iconSize: [18, 18], iconAnchor: [9, 9],
-})
+import GoogleMapView from '../components/GoogleMapView.jsx'
 
 export default function Violations() {
   const [vehicles, setVehicles] = useState([])
@@ -41,14 +34,15 @@ export default function Violations() {
     if (vehicles.length > 0) loadViolations()
   }, [vehicles])
 
-  const violationLocations = useMemo(() =>
+  const violationMarkers = useMemo(() =>
     violations.filter(v => v.start?.location?.latitude).map(v => ({
-      lat: v.start.location.latitude, lng: v.start.location.longitude,
-      name: v.name, speed: v.start.speed, time: v.start.datetime,
+      lat: v.start.location.latitude,
+      lng: v.start.location.longitude,
+      color: '#ef4444',
+      data: v,
       vehicle: vehicles.find(vv => vv.id === v.object_id)?.name || v.object_id,
-      duration: v.duration
     })),
-    [violations, vehicles]
+    [violations]
   )
 
   const uniqueDates = useMemo(() =>
@@ -67,9 +61,8 @@ export default function Violations() {
       const veh = vehicles.find(vv => vv.id === v.object_id)
       rows.push([
         veh?.name || v.object_id, v.name,
-        v.start?.datetime || '',
-        v.start?.speed || 0, v.duration || 0,
-        v.start?.location?.latitude || '',
+        v.start?.datetime || '', v.start?.speed || 0,
+        v.duration || 0, v.start?.location?.latitude || '',
         v.start?.location?.longitude || '',
       ])
     })
@@ -97,15 +90,9 @@ export default function Violations() {
         <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} />
         <label>Hasta:</label>
         <input type="date" value={toDate} onChange={e => setToDate(e.target.value)} />
-        <button className="btn-primary" onClick={loadViolations}>
-          <Search size={16} /> Consultar
-        </button>
-        <button className="btn-outline" onClick={handleExportCSV}>
-          <Download size={16} /> CSV
-        </button>
-        <button className="btn-outline" onClick={() => window.print()}>
-          <Printer size={16} /> PDF
-        </button>
+        <button className="btn-primary" onClick={loadViolations}><Search size={16} /> Consultar</button>
+        <button className="btn-outline" onClick={handleExportCSV}><Download size={16} /> CSV</button>
+        <button className="btn-outline" onClick={() => window.print()}><Printer size={16} /> PDF</button>
       </div>
 
       <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginBottom: 20 }}>
@@ -134,25 +121,15 @@ export default function Violations() {
         </div>
       </div>
 
-      {violationLocations.length > 0 && (
-        <div className="map-container" style={{ height: '280px', marginBottom: 20 }}>
-          <MapContainer center={[-24.84, -65.41]} zoom={10} style={{ height: '100%', width: '100%' }} scrollWheelZoom={true}>
-            <TileLayer attribution='&copy; OSM' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-            {violationLocations.map((vl, i) => (
-              <Marker key={i} position={[vl.lat, vl.lng]} icon={violationIcon}>
-                <Popup>
-                  <div style={{ fontFamily: 'system-ui', minWidth: 160 }}>
-                    <strong style={{ color: '#ef4444' }}>{vl.name}</strong>
-                    <div style={{ marginTop: 4, fontSize: '0.82rem' }}>
-                      <div><strong>{vl.vehicle}</strong></div>
-                      <div>Vel: {formatSpeed(vl.speed)} · {vl.duration}s</div>
-                      <div style={{ fontSize: '0.75rem', marginTop: 2, color: '#666' }}>{formatDateTime(vl.time)}</div>
-                    </div>
-                  </div>
-                </Popup>
-              </Marker>
-            ))}
-          </MapContainer>
+      {violationMarkers.length > 0 && (
+        <div style={{ marginBottom: 20 }}>
+          <GoogleMapView
+            vehicles={[]}
+            markers={violationMarkers}
+            height="280px"
+            zoom={10}
+            center={{ lat: -24.84, lng: -65.41 }}
+          />
         </div>
       )}
 
