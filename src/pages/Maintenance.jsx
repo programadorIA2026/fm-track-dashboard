@@ -237,13 +237,6 @@ export default function Maintenance() {
                           </td>
                           </>
                           )}
-                          <td style={{ fontSize: '0.8rem', color: 'hsl(var(--muted-foreground))' }}>{item.notes || '—'}</td>
-                          <td>
-                            <button onClick={() => handleDelete(item.id)}
-                              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'hsl(var(--destructive))' }}>
-                              <Trash2 size={16} />
-                            </button>
-                          </td>
                         </tr>
                       )
                     })}
