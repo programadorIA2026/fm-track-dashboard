@@ -189,7 +189,29 @@ export default function Maintenance() {
                         ? getKmStatus(+(item.currentKm || 0), +(item.lastServiceKm || 0), +(item.intervalKm || 0))
                         : getDateStatus(item.nextService)
                       return (
-                        <tr key={item.id}>
+                        <tr key={item.id} style={status.className === 'badge-red' ? {
+                          background: 'hsl(350 80% 92%)',
+                          borderBottom: '1px solid hsl(350 50% 85%)'
+                        } : {}}>
+                          {isKmBased && !item.lastServiceKm && !item.intervalKm ? (
+                            <>
+                              <td><strong>{item.vehicleName}</strong></td>
+                              <td>{item.description || '—'}</td>
+                              <td colSpan={2} style={{ color: 'hsl(var(--muted-foreground))', fontStyle: 'italic' }}>
+                                Completá km del último service e intervalo para ver el estado
+                              </td>
+                              <td>{item.currentKm ? `${Number(item.currentKm).toLocaleString()} km` : '—'}</td>
+                              <td><span className={status.className}>{status.label}</span></td>
+                              <td style={{ fontSize: '0.8rem', color: 'hsl(var(--muted-foreground))' }}>{item.notes || '—'}</td>
+                              <td>
+                                <button onClick={() => handleDelete(item.id)}
+                                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'hsl(var(--destructive))' }}>
+                                  <Trash2 size={16} />
+                                </button>
+                              </td>
+                            </>
+                          ) : (
+                          <>
                           <td><strong>{item.vehicleName}</strong></td>
                           <td>{item.description || '—'}</td>
                           {isKmBased ? (
@@ -205,6 +227,15 @@ export default function Maintenance() {
                               <td><strong>{item.nextService ? new Date(item.nextService).toLocaleDateString('es-AR') : '—'}</strong></td>
                               <td><span className={status.className}>{status.label}</span></td>
                             </>
+                          )}
+                          <td style={{ fontSize: '0.8rem', color: 'hsl(var(--muted-foreground))' }}>{item.notes || '—'}</td>
+                          <td>
+                            <button onClick={() => handleDelete(item.id)}
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'hsl(var(--destructive))' }}>
+                              <Trash2 size={16} />
+                            </button>
+                          </td>
+                          </>
                           )}
                           <td style={{ fontSize: '0.8rem', color: 'hsl(var(--muted-foreground))' }}>{item.notes || '—'}</td>
                           <td>
