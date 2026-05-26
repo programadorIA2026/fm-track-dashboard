@@ -18,8 +18,9 @@ const maintenanceTypes = [
 ]
 
 function getKmStatus(currentKm, lastServiceKm, intervalKm) {
-  if (!lastServiceKm || !intervalKm) return { label: 'Sin datos', className: 'badge-blue' }
-  const sinceLast = currentKm - lastServiceKm
+  if (!currentKm || !intervalKm) return { label: 'Sin datos', className: 'badge-blue' }
+  const last = lastServiceKm || 0
+  const sinceLast = currentKm - last
   const remaining = intervalKm - sinceLast
   if (remaining <= 0) return { label: `Vencido (${Math.abs(remaining).toLocaleString()} km)`, className: 'badge-red' }
   if (remaining <= intervalKm * 0.15) return { label: `Próximo (${remaining.toLocaleString()} km)`, className: 'badge-yellow' }
@@ -66,7 +67,21 @@ export default function Maintenance() {
   useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY)
-      if (saved) setItems(JSON.parse(saved))
+      if (saved) {
+        let parsed = JSON.parse(saved)
+        parsed = parsed.map(item => ({
+          ...item,
+          lastServiceKm: item.lastServiceKm || '',
+          intervalKm: item.intervalKm || '',
+          currentKm: item.currentKm || '',
+          lastService: item.lastService || '',
+          nextService: item.nextService || '',
+        }))
+        setItems(parsed)
+        if (JSON.stringify(parsed) !== saved) {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed))
+        }
+      }
     } catch {}
   }, [])
 
@@ -102,7 +117,7 @@ export default function Maintenance() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
         <div className="page-title">
           <h1>Mantenimiento</h1>
-          <p>Control de servicios por km y vencimientos por fecha</p>
+          <p>Control de servicios por km y vencimientos por fecha · v2</p>
         </div>
         <button className="btn-primary" onClick={() => {
           setForm({ id: '', vehicleId: '', type: 'aceite', description: '', lastServiceKm: '', intervalKm: '', currentKm: '', lastService: '', nextService: '', notes: '' })
@@ -193,7 +208,7 @@ export default function Maintenance() {
                           background: 'hsl(350 80% 92%)',
                           borderBottom: '1px solid hsl(350 50% 85%)'
                         } : {}}>
-                          {isKmBased && !item.lastServiceKm && !item.intervalKm ? (
+                          {isKmBased && !item.intervalKm && !item.currentKm ? (
                             <>
                               <td><strong>{item.vehicleName}</strong></td>
                               <td>{item.description || '—'}</td>
