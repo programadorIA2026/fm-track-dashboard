@@ -4,6 +4,8 @@ import Dashboard from './pages/Dashboard.jsx'
 import Trips from './pages/Trips.jsx'
 import Violations from './pages/Violations.jsx'
 import Productivity from './pages/Productivity.jsx'
+import Maintenance from './pages/Maintenance.jsx'
+import Zones from './pages/Zones.jsx'
 
 export default function App() {
   return (
@@ -13,6 +15,8 @@ export default function App() {
         <Route path="/viajes" element={<Trips />} />
         <Route path="/excesos" element={<Violations />} />
         <Route path="/productividad" element={<Productivity />} />
+        <Route path="/mantenimiento" element={<Maintenance />} />
+        <Route path="/zonas" element={<Zones />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

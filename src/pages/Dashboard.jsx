@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import {
   Truck, Gauge, MapPin, Clock, TrendingUp, AlertTriangle,
-  Activity, Navigation
+  Printer, Navigation
 } from 'lucide-react'
 import { getAllData } from '../api/fmTrackApi'
 import { POLL_INTERVAL, DEFAULT_FROM, DEFAULT_TO } from '../config'
@@ -12,16 +12,16 @@ import MapView from '../components/MapView.jsx'
 
 function StatCard({ icon: Icon, label, value, sub, color }) {
   return (
-    <div className="stat-card" style={{ flex: 1, minWidth: 180 }}>
+    <div className="stat-card" style={{ flex: 1, minWidth: 170 }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
         <div>
           <div style={{ fontSize: '0.78rem', color: 'hsl(var(--muted-foreground))', marginBottom: 6 }}>{label}</div>
-          <div style={{ fontSize: '1.6rem', fontWeight: 700 }}>{value}</div>
-          {sub && <div style={{ fontSize: '0.78rem', color: 'hsl(var(--muted-foreground))', marginTop: 4 }}>{sub}</div>}
+          <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>{value}</div>
+          {sub && <div style={{ fontSize: '0.75rem', color: 'hsl(var(--muted-foreground))', marginTop: 4 }}>{sub}</div>}
         </div>
         <div style={{
           width: 40, height: 40, borderRadius: 10,
-          background: `${color}15`, display: 'flex',
+          background: `${color}12`, display: 'flex',
           alignItems: 'center', justifyContent: 'center'
         }}>
           <Icon size={20} color={color} />
@@ -42,32 +42,32 @@ function VehicleCard({ vehicle }) {
     <div className="stat-card">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
         <div>
-          <div style={{ fontWeight: 600 }}>{v.name}</div>
-          <div style={{ fontSize: '0.75rem', color: 'hsl(var(--muted-foreground))' }}>IMEI: {v.imei}</div>
+          <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{v.name}</div>
+          <div style={{ fontSize: '0.72rem', color: 'hsl(var(--muted-foreground))' }}>IMEI: {v.imei}</div>
         </div>
         <span className={status.className}>{status.label}</span>
       </div>
       {v.last_coordinate ? (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: '0.85rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, fontSize: '0.82rem' }}>
           <div style={{ color: 'hsl(var(--muted-foreground))' }}>
-            <Navigation size={12} style={{ display: 'inline', marginRight: 4 }} />
+            <Navigation size={12} style={{ display: 'inline', marginRight: 4, verticalAlign: 'middle' }} />
             {formatSpeed(v.last_coordinate.speed)}
           </div>
           <div style={{ color: 'hsl(var(--muted-foreground))' }}>
-            <Clock size={12} style={{ display: 'inline', marginRight: 4 }} />
+            <Clock size={12} style={{ display: 'inline', marginRight: 4, verticalAlign: 'middle' }} />
             {formatTimeAgo(v.last_coordinate.server_datetime)}
           </div>
           <div style={{ color: 'hsl(var(--muted-foreground))' }}>
-            <TrendingUp size={12} style={{ display: 'inline', marginRight: 4 }} />
+            <TrendingUp size={12} style={{ display: 'inline', marginRight: 4, verticalAlign: 'middle' }} />
             {formatMeters(totalKm)}
           </div>
           <div style={{ color: 'hsl(var(--muted-foreground))' }}>
-            <AlertTriangle size={12} style={{ display: 'inline', marginRight: 4 }} />
+            <AlertTriangle size={12} style={{ display: 'inline', marginRight: 4, verticalAlign: 'middle' }} />
             {violationCount} excesos
           </div>
         </div>
       ) : (
-        <div style={{ fontSize: '0.85rem', color: 'hsl(var(--muted-foreground))' }}>Sin datos de ubicación</div>
+        <div style={{ fontSize: '0.82rem', color: 'hsl(var(--muted-foreground))' }}>Sin datos de ubicación</div>
       )}
     </div>
   )
@@ -99,12 +99,13 @@ export default function Dashboard() {
   const stats = useMemo(() => {
     if (!data) return null
     const v = data.vehicles
+    const now = Date.now()
     const onlineMovil = v.filter(ve => ve.last_coordinate?.speed > 0 &&
-      (Date.now() - new Date(ve.last_coordinate.server_datetime).getTime()) < 3600000).length
+      (now - new Date(ve.last_coordinate.server_datetime).getTime()) < 3600000).length
     const onlineDetenido = v.filter(ve => ve.last_coordinate && ve.last_coordinate.speed === 0 &&
-      (Date.now() - new Date(ve.last_coordinate.server_datetime).getTime()) < 3600000).length
+      (now - new Date(ve.last_coordinate.server_datetime).getTime()) < 3600000).length
     const offline = v.filter(ve => !ve.last_coordinate ||
-      (Date.now() - new Date(ve.last_coordinate.server_datetime).getTime()) >= 3600000).length
+      (now - new Date(ve.last_coordinate.server_datetime).getTime()) >= 3600000).length
     const totalKm = v.reduce((s, ve) => s + (ve.trips?.reduce((s2, t) => s2 + (t.mileage || 0), 0) || 0), 0)
     const totalViolations = v.reduce((s, ve) => s + (ve.violations?.length || 0), 0)
     const activeVehicles = v.filter(ve => ve.trips?.length > 0).length
@@ -132,32 +133,36 @@ export default function Dashboard() {
 
   return (
     <div>
-      <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: '1.3rem', fontWeight: 700, margin: 0 }}>Dashboard</h1>
-        <p style={{ color: 'hsl(var(--muted-foreground))', fontSize: '0.85rem', margin: '4px 0 0' }}>
-          Monitoreo en vivo · Abril 2026 · Datos actualizados cada 30s
-        </p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
+        <div>
+          <h1 style={{ fontSize: '1.3rem', fontWeight: 700, margin: 0 }}>Dashboard</h1>
+          <p style={{ color: 'hsl(var(--muted-foreground))', fontSize: '0.85rem', margin: '4px 0 0' }}>
+            Monitoreo en vivo · Abril 2026 · Datos actualizados cada 30s
+          </p>
+        </div>
+        <button className="btn-outline" onClick={() => window.print()}>
+          <Printer size={16} /> Exportar PDF
+        </button>
       </div>
 
-      <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginBottom: 24 }}>
+      <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginBottom: 20 }}>
         <StatCard icon={Truck} label="Vehículos" value={stats.total}
-          sub={`${stats.onlineMovil} en movimiento, ${stats.onlineDetenido} detenidos`}
-          color="#22c55e" />
+          sub={`${stats.onlineMovil} en movimiento, ${stats.onlineDetenido} detenidos`} color="#2563eb" />
         <StatCard icon={MapPin} label="Offline" value={stats.offline}
           sub="Sin conexión >1h" color="#ef4444" />
         <StatCard icon={TrendingUp} label="Km Totales" value={formatMeters(stats.totalKm)}
-          sub={`${stats.activeVehicles} vehículos activos`} color="#3b82f6" />
+          sub={`${stats.activeVehicles} vehículos activos`} color="#16a34a" />
         <StatCard icon={AlertTriangle} label="Excesos" value={stats.totalViolations}
-          sub="Eventos de velocidad" color="#eab308" />
+          sub="Eventos de velocidad" color="#d97706" />
       </div>
 
-      <div style={{ marginBottom: 24 }}>
-        <MapView vehicles={data.vehicles} height="380px" />
+      <div style={{ marginBottom: 20 }}>
+        <MapView vehicles={data.vehicles} height="360px" />
       </div>
 
       <div>
-        <h2 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: 14 }}>Vehículos</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 14 }}>
+        <h2 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: 12 }}>Vehículos</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: 14 }}>
           {data.vehicles.map(v => <VehicleCard key={v.id} vehicle={v} />)}
         </div>
       </div>
