@@ -95,28 +95,28 @@ export default function Zones() {
         <div style={{ display: 'flex', gap: 8 }}>
           {drawing ? (
             <>
-              <button className="btn-outline" onClick={cancelDrawing}>
-                Cancelar
-              </button>
               <button className="btn-outline" onClick={handleUndoPoint} disabled={drawPoints.length === 0}>
                 Deshacer punto ({drawPoints.length})
               </button>
               <button className="btn-primary" onClick={finishDrawing} disabled={drawPoints.length < 3}>
                 <Hexagon size={16} /> Finalizar polígono
               </button>
+              <button className="btn-danger" onClick={cancelDrawing}>
+                Cancelar dibujo
+              </button>
             </>
           ) : (
             <>
-              <button className="btn-outline" onClick={() => {
-                setDrawing(true); setDrawPoints([])
-              }}>
-                <Hexagon size={16} /> Dibujar polígono
-              </button>
               <button className="btn-primary" onClick={() => {
                 setNewZone({ name: '', type: 'circle', lat: -24.84, lng: -65.41, radius: 500, color: '#2563eb', points: [] })
                 setShowModal(true)
               }}>
-                <Plus size={16} /> Nueva Zona
+                <Plus size={16} /> Zona Circular
+              </button>
+              <button className="btn-outline" onClick={() => {
+                setDrawing(true); setDrawPoints([])
+              }}>
+                <Hexagon size={16} /> Dibujar Polígono
               </button>
             </>
           )}

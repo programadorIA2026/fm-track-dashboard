@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Plus, Trash2, Wrench, AlertTriangle, Calendar, Gauge } from 'lucide-react'
-import { getVehicles } from '../api/fmTrackApi.js'
+import { getVehicles, getTrips } from '../api/fmTrackApi.js'
+import { DEFAULT_FROM, DEFAULT_TO } from '../config.js'
 
 const STORAGE_KEY = 'fm-track-maintenance'
 
@@ -38,6 +39,7 @@ function getDateStatus(date) {
 export default function Maintenance() {
   const [vehicles, setVehicles] = useState([])
   const [items, setItems] = useState([])
+  const [vehicleKm, setVehicleKm] = useState({})
   const [showModal, setShowModal] = useState(false)
   const [form, setForm] = useState({
     id: Date.now().toString(), vehicleId: '', type: 'aceite',
@@ -46,7 +48,20 @@ export default function Maintenance() {
     lastService: '', nextService: '', notes: ''
   })
 
-  useEffect(() => { getVehicles().then(setVehicles).catch(() => {}) }, [])
+  useEffect(() => {
+    getVehicles().then(async vehs => {
+      setVehicles(vehs)
+      const kmMap = {}
+      await Promise.all(vehs.map(async v => {
+        try {
+          const trips = await getTrips(v.id, DEFAULT_FROM, DEFAULT_TO)
+          const totalKm = (trips.trips || []).reduce((s, t) => s + (t.mileage || 0), 0)
+          kmMap[v.id] = Math.round(totalKm / 1000)
+        } catch { kmMap[v.id] = 0 }
+      }))
+      setVehicleKm(kmMap)
+    }).catch(() => {})
+  }, [])
 
   useEffect(() => {
     try {
@@ -222,10 +237,14 @@ export default function Maintenance() {
             <form onSubmit={handleSubmit}>
               <div className="form-group">
                 <label>Vehículo</label>
-                <select value={form.vehicleId} onChange={e => setForm({ ...form, vehicleId: e.target.value })}
+                <select value={form.vehicleId} onChange={e => {
+                    const vid = e.target.value
+                    const km = vehicleKm[vid] || ''
+                    setForm({ ...form, vehicleId: vid, currentKm: km ? String(km) : form.currentKm })
+                  }}
                   required style={{ width: '100%', padding: '8px 12px', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: '0.88rem', background: 'white' }}>
                   <option value="">Seleccionar vehículo</option>
-                  {vehicles.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
+                  {vehicles.map(v => <option key={v.id} value={v.id}>{v.name} {vehicleKm[v.id] ? `(${vehicleKm[v.id].toLocaleString()} km)` : ''}</option>)}
                 </select>
               </div>
               <div className="form-group">

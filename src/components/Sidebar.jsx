@@ -19,11 +19,13 @@ export default function Sidebar() {
       <div style={{ padding: '20px 16px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
         <a href="https://monitoreodeflotas.com" target="_blank" rel="noopener noreferrer"
           style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-          <img
-            src="/logo.png"
-            alt="Monitoreo de Flotas"
-            style={{ height: 36, width: 'auto' }}
-          />
+          <div style={{ background: 'white', borderRadius: 8, padding: 4, display: 'flex' }}>
+            <img
+              src="/logo.png"
+              alt="Monitoreo de Flotas"
+              style={{ height: 32, width: 'auto' }}
+            />
+          </div>
           <div>
             <div style={{ fontWeight: 700, fontSize: '0.88rem', color: 'white', lineHeight: 1.2 }}>
               Monitoreo de<br />Flotas
@@ -49,14 +51,11 @@ export default function Sidebar() {
       </nav>
 
       <div style={{
-        padding: '16px', borderTop: '1px solid rgba(255,255,255,0.08)',
-        fontSize: '0.7rem', color: 'hsl(var(--sidebar-foreground) / 0.4)',
+        padding: '14px 16px', borderTop: '1px solid rgba(255,255,255,0.08)',
+        fontSize: '0.78rem', color: 'hsl(var(--sidebar-foreground) / 0.7)',
         textAlign: 'center'
       }}>
-        <a href="https://monitoreodeflotas.com" target="_blank" rel="noopener noreferrer"
-          style={{ color: 'inherit', textDecoration: 'none' }}>
-          monitoreodeflotas.com
-        </a>
+        DON DANTE SRL
       </div>
     </div>
   )
